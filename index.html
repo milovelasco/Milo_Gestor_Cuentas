@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GestorCuentas — Control Financiero</title>
+    <meta name="description"
+        content="Aplicación de gestión de cuentas e ingresos, similar a Excel pero más intuitiva y dinámica." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <div>
+                    <h1>GestorCuentas</h1>
+                    <p>Control Financiero Personal</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="month-nav">
+                <button id="prevMonth" class="month-btn">‹</button>
+                <span id="currentMonthLabel">Febrero 2026</span>
+                <button id="nextMonth" class="month-btn">›</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <label class="btn btn-secondary" for="importExcel">
+                <span>📂</span> Importar Excel
+            </label>
+            <input type="file" id="importExcel" accept=".xlsx,.xls" style="display:none" />
+            <button class="btn btn-primary" id="exportExcel">
+                <span>📥</span> Exportar Excel
+            </button>
+            <button class="btn btn-accent" id="addGroupBtn">
+                <span>＋</span> Nuevo Grupo
+            </button>
+        </div>
+    </header>
+
+    <!-- ========== SUMMARY CARDS ========== -->
+    <section class="summary-section">
+        <div class="summary-card card-total">
+            <div class="card-icon">📊</div>
+            <div class="card-info">
+                <span class="card-label">Total Gastos</span>
+                <span class="card-value" id="summaryTotal">$0</span>
+            </div>
+        </div>
+        <div class="summary-card card-sueldo">
+            <div class="card-icon">💵</div>
+            <div class="card-info">
+                <span class="card-label">Sueldo</span>
+                <span class="card-value" id="summarySueldo" contenteditable="true">$0</span>
+            </div>
+        </div>
+        <div class="summary-card card-ingresos">
+            <div class="card-icon">💹</div>
+            <div class="card-info">
+                <span class="card-label">Total Ingresos</span>
+                <span class="card-value" id="summaryIngresos">$0</span>
+            </div>
+        </div>
+        <div class="summary-card card-diff">
+            <div class="card-icon">📈</div>
+            <div class="card-info">
+                <span class="card-label">Diferencia</span>
+                <span class="card-value" id="summaryDiff">$0</span>
+            </div>
+        </div>
+        <div class="summary-card card-positivos">
+            <div class="card-icon">✅</div>
+            <div class="card-info">
+                <span class="card-label">Solo Pagados</span>
+                <span class="card-value" id="summaryPositivos">$0</span>
+            </div>
+        </div>
+        <div class="summary-card card-pendiente">
+            <div class="card-icon">⏳</div>
+            <div class="card-info">
+                <span class="card-label">Pendientes</span>
+                <span class="card-value" id="summaryPendientes">$0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== INGRESOS EXTRA PANEL ========== -->
+    <section class="ingresos-section">
+        <div class="ingresos-panel" id="ingresosPanel">
+            <div class="ingresos-header">
+                <div class="ingresos-header-left">
+                    <span class="ingresos-icon">💹</span>
+                    <div>
+                        <span class="ingresos-title">Ingresos Extra</span>
+                        <span class="ingresos-subtitle" id="ingresosSubtitle">0 fuentes adicionales</span>
+                    </div>
+                </div>
+                <div class="ingresos-header-right">
+                    <span class="ingresos-total-label">Total Extra:</span>
+                    <span class="ingresos-total-value" id="ingresosTotal">$0</span>
+                    <button class="btn btn-ingresos" id="addIngresoBtn">
+                        <span>＋</span> Agregar Ingreso
+                    </button>
+                    <button class="btn-icon ingresos-toggle" id="toggleIngresos" title="Expandir/Colapsar">▾</button>
+                </div>
+            </div>
+            <div class="ingresos-body" id="ingresosBody">
+                <table class="items-table ingresos-table">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Monto</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingresosTbody">
+                        <!-- rendered by JS -->
+                    </tbody>
+                </table>
+                <div class="ingresos-empty" id="ingresosEmpty">
+                    <span>Sin ingresos extra registrados. Hacé clic en "＋ Agregar Ingreso" para comenzar.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+        <!-- Groups Container -->
+        <div class="groups-container" id="groupsContainer">
+            <!-- Groups are rendered by JS -->
+        </div>
+    </main>
+
+    <!-- ========== MODAL: Add/Edit Group ========== -->
+    <div class="modal-overlay" id="groupModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="groupModalTitle">Nuevo Grupo</h2>
+                <button class="modal-close" id="closeGroupModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Nombre del Grupo</label>
+                    <input type="text" id="groupNameInput" placeholder="Ej: Gastos Casa" />
+                </div>
+                <div class="form-field">
+                    <label>Color del Grupo</label>
+                    <div class="color-picker" id="colorPicker">
+                        <div class="color-opt" data-color="#f97316" style="background:#f97316"></div>
+                        <div class="color-opt" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+                        <div class="color-opt" data-color="#0ea5e9" style="background:#0ea5e9"></div>
+                        <div class="color-opt" data-color="#10b981" style="background:#10b981"></div>
+                        <div class="color-opt" data-color="#ec4899" style="background:#ec4899"></div>
+                        <div class="color-opt" data-color="#f59e0b" style="background:#f59e0b"></div>
+                        <div class="color-opt" data-color="#6366f1" style="background:#6366f1"></div>
+                        <div class="color-opt" data-color="#14b8a6" style="background:#14b8a6"></div>
+                        <div class="color-opt" data-color="#ef4444" style="background:#ef4444"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelGroupModal">Cancelar</button>
+                <button class="btn btn-primary" id="saveGroupModal">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: Add/Edit Item ========== -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="itemModalTitle">Nuevo Ítem</h2>
+                <button class="modal-close" id="closeItemModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Descripción</label>
+                    <input type="text" id="itemNameInput" placeholder="Ej: Gasto Común" />
+                </div>
+                <div class="form-field">
+                    <label>Monto ($)</label>
+                    <input type="number" id="itemAmountInput" placeholder="0" min="0" />
+                </div>
+                <div class="form-field">
+                    <label>Estado</label>
+                    <div class="status-selector" id="statusSelector">
+                        <button class="status-btn active" data-status="PAGADO">✅ PAGADO</button>
+                        <button class="status-btn" data-status="Pendiente">⏳ Pendiente</button>
+                        <button class="status-btn" data-status="Suspendido">🚫 Suspendido</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelItemModal">Cancelar</button>
+                <button class="btn btn-primary" id="saveItemModal">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: Add/Edit Ingreso ========== -->
+    <div class="modal-overlay" id="ingresoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="ingresoModalTitle">Nuevo Ingreso Extra</h2>
+                <button class="modal-close" id="closeIngresoModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Descripción</label>
+                    <input type="text" id="ingresoNameInput" placeholder="Ej: Freelance, Arriendo cobrado, Bono..." />
+                </div>
+                <div class="form-field">
+                    <label>Monto ($)</label>
+                    <input type="number" id="ingresoAmountInput" placeholder="0" min="0" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelIngresoModal">Cancelar</button>
+                <button class="btn btn-accent" id="saveIngresoModal">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TOAST ========== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- SheetJS for Excel I/O -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
