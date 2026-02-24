@@ -111,6 +111,7 @@ body {
   font-size: 18px;
   font-weight: 800;
   background: linear-gradient(135deg, #a5b4fc, #6366f1);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1012,6 +1013,19 @@ body {
   font-size: 14px;
   max-width: 320px;
   line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.btn-copy {
+  margin-top: 10px;
+  padding: 12px 24px;
+  font-size: 14px;
+  border-color: rgba(99, 102, 241, .4);
+}
+
+.btn-copy:hover {
+  background: rgba(99, 102, 241, .1);
+  border-color: var(--accent-purple);
 }
 
 /* ======= RESPONSIVE ======= */

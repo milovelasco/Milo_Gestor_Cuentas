@@ -242,6 +242,9 @@ function renderGroups() {
         <div class="empty-icon">📋</div>
         <h2>Sin grupos aún</h2>
         <p>Hacé clic en <strong>"+ Nuevo Grupo"</strong> para comenzar a organizar tus cuentas, o importá tu archivo Excel.</p>
+        <button class="btn btn-secondary btn-copy" onclick="copyFromPreviousMonth()">
+          <span>📋</span> Copiar estructura del mes anterior
+        </button>
       </div>`;
         return;
     }
@@ -829,13 +832,57 @@ function handleExport() {
 }
 
 // ============================================================
+// COPY FROM PREVIOUS MONTH
+// ============================================================
+function copyFromPreviousMonth() {
+    const d = getDateFromKey(state.currentMonth);
+    d.setMonth(d.getMonth() - 1);
+    const prevKey = monthKey(d);
+
+    const prevData = state.months[prevKey];
+    if (!prevData || (!prevData.groups.length && !prevData.extraIngresos.length)) {
+        showToast('No se encontró información en el mes anterior (' + MONTHS_ES[d.getMonth()] + ')', 'error');
+        return;
+    }
+
+    if (!confirm(`¿Copiar la estructura de ${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}?`)) return;
+
+    const current = currentData();
+    current.sueldo = prevData.sueldo;
+
+    current.groups = prevData.groups.map(g => ({
+        id: uid(),
+        name: g.name,
+        color: g.color,
+        items: g.items.map(i => ({
+            id: uid(),
+            name: i.name,
+            amount: i.amount,
+            status: 'Pendiente' // Reiniciar estados
+        }))
+    }));
+
+    current.extraIngresos = (prevData.extraIngresos || []).map(ing => ({
+        id: uid(),
+        name: ing.name,
+        amount: ing.amount
+    }));
+
+    save();
+    renderAll();
+    showToast('Estructura copiada con éxito ✓', 'success');
+}
+
+// ============================================================
 // TOAST
 // ============================================================
 let toastTimer = null;
 function showToast(msg, type = 'info') {
     const el = document.getElementById('toast');
+    if (!el) return;
     el.textContent = msg;
     el.className = `toast show ${type}`;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
 }
+
